@@ -1,15 +1,8 @@
 import fs from "fs";
 
-const mergeAccountFromEmailMap = (emailMap) => {
-    return [];
-};
-
-const createEmailMap = () => {
-    const rawAccountData = fs.readFileSync("./accounts.json");
-    const jsonAccountData = JSON.parse(rawAccountData);
-
+const createEmailMap = (json) => {
     const accountEmailMap = new Map();
-    for (let account of jsonAccountData) {
+    for (let account of json) {
         for (let accountEmail of account.emails) {
             if (!accountEmailMap.has(accountEmail)) {
                 accountEmailMap.set(accountEmail, {
@@ -23,12 +16,24 @@ const createEmailMap = () => {
             existingEmailInfo.applications.push(account.application);
         }
     }
-
     return accountEmailMap;
 };
 
-const emailMap = createEmailMap();
-// Now, Map is fully populated for each unique email
-// Find all info regarding a single Name/Person to merge together
-console.log(emailMap);
-console.log(emailMap.values());
+const mergeAccountsFromEmailMap = (emailMap) => {
+    const mergedAccounts = [];
+    for (let [email, emailInfo] of emailMap) {
+        mergedAccounts.push({
+            applications: [...emailInfo.applications],
+            emails: email,
+            name: emailInfo.names[0],
+        });
+    }
+    return mergedAccounts;
+};
+
+const rawAccountData = fs.readFileSync("./accounts.json");
+const jsonAccountData = JSON.parse(rawAccountData);
+
+const emailMap = createEmailMap(jsonAccountData);
+const mergedAccounts = mergeAccountsFromEmailMap(emailMap);
+console.log(mergedAccounts);
